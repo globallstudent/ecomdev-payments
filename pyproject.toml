@@ -1,0 +1,62 @@
+[project]
+name = "ecomdev-payments"
+version = "0.1.0"
+description = "Учёт оплат учебного центра: ученики, оплаты, должники за месяц"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.20.1",
+    "fastapi[standard]>=0.159.1",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.16.1",
+    "sqlalchemy[asyncio]>=2.1.6",
+    "starlette-admin[i18n]>=1.0.2",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+    "testcontainers>=4.15.0",
+    "ty>=0.0.90",
+]
+
+[tool.fastapi]
+entrypoint = "app.main:app"
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["*.md"]   # ruff >= 0.16 also formats code blocks inside Markdown; docs keep their own layout
+
+[tool.ruff.lint]
+extend-select = ["FAST", "DTZ", "E", "W", "N", "S", "ARG", "RET", "PTH", "T20", "ERA"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "PLR2004", "ARG001"]
+"migrations/**" = ["ERA001"]
+"app/seed.py" = ["T20"]
+"app/admin/**" = ["RUF012"]
+
+[tool.pytest]
+testpaths = ["tests"]
+pythonpath = ["."]
+anyio_mode = "auto"
+
+[tool.alembic]
+script_location = "%(here)s/migrations"
+file_template = "%%(year)d_%%(month).2d_%%(day).2d_%%(rev)s_%%(slug)s"
+prepend_sys_path = ["."]
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff_check"
+type = "module"
+module = "ruff"
+options = "check --fix --quiet REVISION_SCRIPT_FILENAME"
+
+[[tool.alembic.post_write_hooks]]
+name = "ruff_format"
+type = "module"
+module = "ruff"
+options = "format --quiet REVISION_SCRIPT_FILENAME"

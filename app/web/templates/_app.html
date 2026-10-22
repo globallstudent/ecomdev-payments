@@ -1,0 +1,102 @@
+<header class="topbar">
+  <div class="wrap topbar__in">
+    <div class="crumb">
+      <b class="crumb__root">Учёт оплат</b><span class="crumb__sep" aria-hidden="true">/</span><span class="crumb__page">Должники</span>
+    </div>
+    <div class="topbar__actions">
+      <nav class="stepper" aria-label="Месяц">
+        <a class="stepper__btn" href="?month={{ prev_month }}" data-month="{{ prev_month }}" aria-label="Предыдущий месяц">‹</a>
+        <span class="stepper__label">{{ month_label }}</span>
+        <a class="stepper__btn" href="?month={{ next_month }}" data-month="{{ next_month }}" aria-label="Следующий месяц">›</a>
+      </nav>
+      <button class="btn btn--primary" type="button" data-pay-new>Новая оплата</button>
+    </div>
+  </div>
+  <div class="loading" aria-hidden="true"></div>
+</header>
+
+<main>
+  <section class="band">
+    <div class="wrap kpis">
+      <div class="kpi">
+        <span class="kpi__label">Долг за {{ month_name }}</span>
+        <span class="kpi__value{% if report.count %} kpi__value--debt{% endif %}">{{ report.total_debt | money }}</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi__label">Собрано</span>
+        <span class="kpi__value">{{ report.paid_total | money }} <small>· {{ paid_percent }}%</small></span>
+        <span class="bar" aria-hidden="true"><i style="width: {{ [paid_percent, 100] | min }}%"></i></span>
+      </div>
+      <div class="kpi">
+        <span class="kpi__label">Должников</span>
+        <span class="kpi__value">{{ report.count }} <small>из {{ report.students_total }} {{ report.students_total | students_word }}</small></span>
+      </div>
+    </div>
+  </section>
+
+  {% if report.count %}
+  <section class="band">
+    <div class="wrap toolbar">
+      <div class="tabs" role="toolbar" aria-label="Группы">
+        <button class="tab is-on" type="button" data-tab="" aria-pressed="true">Все <span class="tab__count">{{ report.count }}</span></button>
+        {% for group, count in groups %}
+        <button class="tab" type="button" data-tab="{{ group }}" aria-pressed="false">{{ group }} <span class="tab__count">{{ count }}</span></button>
+        {% endfor %}
+      </div>
+      <label class="search">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.8 10.8 14.5 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="visually-hidden">Поиск</span>
+        <input id="search" type="search" placeholder="Имя или телефон" autocomplete="off">
+      </label>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Ученик</th>
+          <th scope="col">Группа</th>
+          <th scope="col" class="num">В месяц</th>
+          <th scope="col">Оплачено</th>
+          <th scope="col" class="num">Долг ↓</th>
+          <th scope="col"><span class="visually-hidden">Действие</span></th>
+          <th class="chev" aria-hidden="true"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in report.items %}
+        {% set percent = (item.paid / item.monthly_fee * 100) | round(1) %}
+        <tr class="row" tabindex="0" data-student="{{ item.student_id }}" data-group="{{ item.group }}" data-search="{{ item.name | search_key(item.phone) }}">
+          <td class="c-name"><b>{{ item.name }}</b><span class="sub">{{ item.phone }}</span></td>
+          <td class="c-group">{{ item.group }}</td>
+          <td class="c-fee num">{{ item.monthly_fee | money }}</td>
+          <td class="c-paid">
+            <span class="paid">
+              <span class="bar" aria-hidden="true"><i style="width: {{ percent }}%"></i></span>
+              <span>{{ item.paid | money }}<span class="paid__of"> из {{ item.monthly_fee | money }}</span></span>
+            </span>
+          </td>
+          <td class="c-debt num">{{ item.debt | money }}</td>
+          <td class="c-act num"><button class="btn-row" type="button" tabindex="-1">Принять</button></td>
+          <td class="chev" aria-hidden="true">›</td>
+        </tr>
+        {% endfor %}
+        <tr class="no-match" data-no-match hidden><td colspan="7">Никого не нашли. Измените поиск или группу.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="wrap empty">
+    {% if report.students_total %}
+    <b>За {{ month_name }} все оплатили</b>
+    <span>Собрано {{ report.paid_total | money }} из {{ report.expected_total | money }}</span>
+    {% else %}
+    <b>Пока нет учеников</b>
+    <span>Добавьте их через API (<a href="/docs">/docs</a>) или <a href="/admin">админку</a>.</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</main>
+
+<script type="application/json" id="page-data">{{ page_data | tojson }}</script>

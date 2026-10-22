@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Должники · {{ month_label }}</title>
+  <link rel="icon" href="{{ url_for('static', path='favicon.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <script type="module" src="{{ url_for('static', path='app.js') }}"></script>
+</head>
+<body>
+  <div id="app">{% include "_app.html" %}</div>
+
+  <dialog class="sheet" id="pay-dialog" aria-labelledby="pay-title">
+    <form class="sheet__form" id="pay-form" novalidate>
+      <header class="sheet__head">
+        <button class="icon-btn" type="button" data-close aria-label="Закрыть">✕</button>
+        <h2 id="pay-title">Новая оплата</h2>
+        <span class="sheet__spacer" aria-hidden="true"></span>
+      </header>
+
+      <div class="sheet__body">
+        <div class="student-card" id="student-card" hidden>
+          <span class="avatar" id="student-avatar" aria-hidden="true"></span>
+          <div class="student-card__text">
+            <b id="student-name"></b>
+            <small id="student-meta"></small>
+          </div>
+          <button class="link-btn" type="button" id="student-change">Изменить</button>
+        </div>
+
+        <div class="field" id="student-field">
+          <label for="pay-student">Ученик</label>
+          <select id="pay-student" name="student_id" required>
+            <option value="">Выберите ученика</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="pay-amount">Сумма</label>
+          <input class="amount" id="pay-amount" name="amount" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="err-amount">
+          <div class="seg" role="group" aria-label="Быстрая сумма">
+            <button type="button" data-amount="full">Весь долг</button>
+            <button type="button" data-amount="half">Половина</button>
+            <button type="button" data-amount="custom">Другая</button>
+          </div>
+          <p class="field__error" id="err-amount" hidden></p>
+        </div>
+
+        <div class="field">
+          <span class="label" id="date-label">Дата</span>
+          <div class="seg" role="group" aria-labelledby="date-label">
+            <button type="button" data-date="today">Сегодня</button>
+            <button type="button" data-date="yesterday">Вчера</button>
+            <button type="button" data-date="pick">Дата…</button>
+          </div>
+          <input type="date" id="pay-date" name="paid_on" aria-labelledby="date-label" hidden>
+        </div>
+
+        <dl class="summary">
+          <div><dt>В месяц</dt><dd id="sum-fee">—</dd></div>
+          <div><dt>Оплачено до этого</dt><dd id="sum-paid">—</dd></div>
+          <div><dt>Долг после оплаты</dt><dd id="sum-after">—</dd></div>
+        </dl>
+
+        <p class="form-error" id="err-form" role="alert" hidden></p>
+      </div>
+
+      <footer class="sheet__foot">
+        <button class="btn btn--primary btn--block" id="pay-submit" type="submit">Принять</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
